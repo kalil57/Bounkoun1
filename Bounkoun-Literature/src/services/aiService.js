@@ -1,11 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
-import dotenv from "dotenv";
+import { GoogleGenAI } from "@google/genai";
 
-dotenv.config();
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
-});
+const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const MODEL = "gemini-2.5-flash";
 
 export async function summarizeAbstract(abstract) {
   if (!abstract || abstract.trim() === "") {
@@ -13,17 +9,11 @@ export async function summarizeAbstract(abstract) {
   }
 
   try {
-    const response = await client.messages.create({
-      model: "claude-3-sonnet-20240229",
-      max_tokens: 500,
-      messages: [
-        {
-          role: "user",
-          content: `Summarize the following academic abstract concisely and clearly. Focus on the main objective, methodology, key findings, and implications:\n\n${abstract}`
-        }
-      ]
+    const response = await client.models.generateContent({
+      model: MODEL,
+      contents: `Summarize the following academic abstract concisely and clearly. Focus on the main objective, methodology, key findings, and implications:\n\n${abstract}`
     });
-    return response.content[0].text.trim();
+    return response.text.trim();
   } catch (error) {
     console.error("Error summarizing abstract via AI:", error.message);
     throw new Error(`AI summarization failed: ${error.message}`);
@@ -45,19 +35,12 @@ Return ONLY a JSON array of citations. Each citation in the array should be a st
 Do not return any explanations, markdown code blocks, or preamble. Return just the JSON array.
 `;
 
-    const response = await client.messages.create({
-      model: "claude-3-sonnet-20240229",
-      max_tokens: 500,
-      messages: [
-        {
-          role: "user",
-          content: prompt
-        }
-      ]
+    const response = await client.models.generateContent({
+      model: MODEL,
+      contents: prompt
     });
 
-    let jsonText = response.content[0].text.trim();
-    // Clean any accidental markdown code blocks
+    let jsonText = response.text.trim();
     if (jsonText.startsWith("```json")) {
       jsonText = jsonText.replace(/^```json/, "").replace(/```$/, "").trim();
     } else if (jsonText.startsWith("```")) {
