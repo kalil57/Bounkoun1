@@ -1,0 +1,131 @@
+{
+  "projects": [
+    {
+      "id": "proj_1",
+      "title": "AI-Powered Adaptive Feedback in Higher Education",
+      "studentName": "Amadou Diallo",
+      "academicLevel": "Master",
+      "discipline": "Computer Science & Education",
+      "status": "Proposal",
+      "initialIdea": "Design an intelligent tutoring agent that reads students' drafts and gives real-time pedagogical feedback based on Bloom's Taxonomy.",
+      "createdAt": "2026-07-09T08:16:17.138Z",
+      "updatedAt": "2026-07-12T08:16:17.138Z"
+    },
+    {
+      "id": "proj_2",
+      "title": "Socio-Economic Barriers to Renewable Energy Adoption in Rural West Africa",
+      "studentName": "Fatoumata Kamara",
+      "academicLevel": "PhD",
+      "discipline": "Development Economics",
+      "status": "Topic Selection",
+      "initialIdea": "Analyzing why smallholder communities reject solar mini-grids despite high subsidies.",
+      "createdAt": "2026-07-14T08:16:17.138Z",
+      "updatedAt": "2026-07-14T08:16:17.138Z"
+    }
+  ],
+  "topics": [
+    {
+      "id": "topic_1",
+      "projectId": "proj_1",
+      "title": "Large Language Models as Diagnostic Academic Assessors",
+      "description": "Evaluating the alignment of generative AI diagnostics against senior human evaluator scores in undergraduate CS coursework.",
+      "selected": true,
+      "feasibilityScore": 8,
+      "relevanceScore": 9,
+      "originalityScore": 7,
+      "feedback": "High feasibility due to open-source LLM availability. Ensure strict anonymity of training coursework to adhere to institutional guidelines."
+    },
+    {
+      "id": "topic_2",
+      "projectId": "proj_1",
+      "title": "Visual Cognitive Maps for Prompt Engineering",
+      "description": "Developing a node-based UI that translates cognitive scaffolds into visual prompt graphs to guide thesis writing.",
+      "selected": false,
+      "feasibilityScore": 6,
+      "relevanceScore": 8,
+      "originalityScore": 9,
+      "feedback": "Highly original but frontend development overhead may be high for a Master thesis. Scope should focus on a lightweight prototype."
+    },
+    {
+      "id": "topic_3",
+      "projectId": "proj_2",
+      "title": "Trust, Tariffs, and Tenancy: Landlord-Tenant Dynamics in Mini-Grid Integration",
+      "description": "An empirical investigation of the landlord-tenant dilemma regarding long-term micro-utility investments in peri-urban markets.",
+      "selected": false,
+      "feasibilityScore": 7,
+      "relevanceScore": 9,
+      "originalityScore": 9,
+      "feedback": "Excellent focus. PhD rigor requires a strong game-theoretic framework paired with multi-regional survey data."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q_1",
+      "projectId": "proj_1",
+      "question": "To what extent do LLM-generated pedagogical feedbacks improve subsequent drafting quality in student coursework?",
+      "rationale": "Directly measures the practical utility and educational impact of the proposed system.",
+      "hypothesis": "Students utilizing LLM cognitive feedback show a 15% higher score improvement in logic and synthesis during the final draft than control groups.",
+      "status": "Approved"
+    },
+    {
+      "id": "q_2",
+      "projectId": "proj_1",
+      "question": "How does the alignment of AI-generated feedback with Bloom's Taxonomy vary across different disciplines?",
+      "rationale": "Ensures the system generalizes beyond computer science into other scientific fields.",
+      "status": "Draft"
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_1",
+      "projectId": "proj_1",
+      "title": "Literature Review on Intelligent Tutoring Systems",
+      "description": "Synthesize findings regarding cognitive tutoring architectures and feedback mechanisms.",
+      "assignedService": "literature",
+      "status": "Completed",
+      "order": 1,
+      "updatedAt": "2026-07-10T08:16:17.138Z"
+    },
+    {
+      "id": "step_2",
+      "projectId": "proj_1",
+      "title": "Define Feedback Taxonomy & Scaffolds",
+      "description": "Develop the prompt rules mapping student draft metrics to specific Bloom's taxonomy categories.",
+      "assignedService": "core",
+      "status": "In Progress",
+      "order": 2,
+      "updatedAt": "2026-07-12T08:16:17.138Z"
+    },
+    {
+      "id": "step_3",
+      "projectId": "proj_1",
+      "title": "Prototype Writing Evaluation Route",
+      "description": "Implement API integration with LLM backend for structural text parsing.",
+      "assignedService": "writing",
+      "status": "Pending",
+      "order": 3,
+      "updatedAt": "2026-07-14T08:16:17.138Z"
+    },
+    {
+      "id": "step_4",
+      "projectId": "proj_1",
+      "title": "Human-in-the-Loop Validation Survey",
+      "description": "Obtain validation scores from university professors reviewing the alignment of generated feedback.",
+      "assignedService": "validation",
+      "status": "Pending",
+      "order": 4,
+      "updatedAt": "2026-07-14T08:16:17.138Z"
+    },
+    {
+      "id": "step_5",
+      "projectId": "proj_1",
+      "title": "Statistical Quality Audit",
+      "description": "Run ANOVA and descriptive statistical reviews on student draft scores before and after AI scaffold usage.",
+      "assignedService": "stats",
+      "status": "Pending",
+      "order": 5,
+      "updatedAt": "2026-07-14T08:16:17.138Z"
+    }
+  ],
+  "events": []
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Bounkoun Core",
+  "description": "Backend microservice and developer console for Bounkoun thesis assistant, managing projects, academic levels, topics, research questions, and workflow steps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
