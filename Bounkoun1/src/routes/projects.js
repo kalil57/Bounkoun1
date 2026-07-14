@@ -9,7 +9,7 @@ router.post("/", requireAuth, async (req, res) => {
     const project = await createProject(req.body, req.user.id);
     res.status(201).json(project);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 
@@ -18,7 +18,7 @@ router.get("/:id", async (req, res) => {
     const project = await getProjectById(req.params.id);
     res.status(200).json(project);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 
@@ -27,7 +27,7 @@ router.get("/", requireAuth, async (req, res) => {
     const projects = await getAllProjects(req.user.id);
     res.status(200).json(projects);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 

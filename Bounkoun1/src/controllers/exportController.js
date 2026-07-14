@@ -1,5 +1,6 @@
 import { supabase } from "../db/supabaseClient.js";
 import { Document, Packer, Paragraph, HeadingLevel } from "docx";
+import { AppError } from "../utils/AppError.js";
 
 async function getProjectWithSections(projectId) {
   const { data: project, error: projectError } = await supabase
@@ -8,7 +9,7 @@ async function getProjectWithSections(projectId) {
     .eq("id", projectId)
     .single();
 
-  if (projectError) throw new Error(projectError.message);
+  if (projectError || !project) throw new AppError(404, "Project not found");
 
   const { data: sections, error: sectionsError } = await supabase
     .from("sections")

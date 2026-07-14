@@ -9,7 +9,7 @@ router.post("/:projectId/generate", requireAuth, async (req, res) => {
     const section = await createSectionDraft(req.params.projectId, req.body.section_type);
     res.status(201).json(section);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 
@@ -18,7 +18,7 @@ router.get("/:projectId", async (req, res) => {
     const sections = await getSectionsForProject(req.params.projectId);
     res.json(sections);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 
@@ -27,7 +27,7 @@ router.post("/:sectionId/validate", requireAuth, async (req, res) => {
     const result = await validateSection(req.params.sectionId);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 

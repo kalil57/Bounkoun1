@@ -10,7 +10,7 @@ router.get("/:projectId/markdown", async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename="thesis-${req.params.projectId}.md"`);
     res.send(md);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 
@@ -21,7 +21,7 @@ router.get("/:projectId/docx", async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename="thesis-${req.params.projectId}.docx"`);
     res.send(buffer);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 });
 

@@ -1,10 +1,11 @@
 import { supabase } from "../db/supabaseClient.js";
 import { generateSectionDraft } from "../services/aiService.js";
 import { validateSectionAI } from "../services/aiService.js";
+import { AppError } from "../utils/AppError.js";
 
 export async function createSectionDraft(projectId, sectionType) {
   if (!sectionType) {
-    throw new Error("Missing required field: section_type");
+    throw new AppError(400, "Missing required field: section_type");
   }
 
   const { data: project, error: projectError } = await supabase
@@ -13,7 +14,7 @@ export async function createSectionDraft(projectId, sectionType) {
     .eq("id", projectId)
     .single();
 
-  if (projectError) throw new Error(projectError.message);
+  if (projectError || !project) throw new AppError(404, "Project not found");
 
   const { data: questionRow } = await supabase
     .from("research_questions")
@@ -57,8 +58,7 @@ export async function validateSection(sectionId) {
     .eq("id", sectionId)
     .single();
 
-  if (error) throw new Error(error.message);
-  if (!section) throw new Error("Section not found");
+  if (error || !section) throw new AppError(404, "Section not found");
 
   const validation = await validateSectionAI(
     section.content,
