@@ -1,6 +1,6 @@
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { createSectionDraft, getSectionsForProject } from "../controllers/sectionsController.js";
+import { createSectionDraft, getSectionsForProject, validateSection } from "../controllers/sectionsController.js";
 
 const router = express.Router();
 
@@ -17,6 +17,15 @@ router.get("/:projectId", async (req, res) => {
   try {
     const sections = await getSectionsForProject(req.params.projectId);
     res.json(sections);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post("/:sectionId/validate", requireAuth, async (req, res) => {
+  try {
+    const result = await validateSection(req.params.sectionId);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

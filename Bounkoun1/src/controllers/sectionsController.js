@@ -1,5 +1,6 @@
 import { supabase } from "../db/supabaseClient.js";
 import { generateSectionDraft } from "../services/aiService.js";
+import { validateSectionAI } from "../services/aiService.js";
 
 export async function createSectionDraft(projectId, sectionType) {
   if (!sectionType) {
@@ -47,4 +48,23 @@ export async function getSectionsForProject(projectId) {
 
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function validateSection(sectionId) {
+  const { data: section, error } = await supabase
+    .from("sections")
+    .select("*, projects(academic_level)")
+    .eq("id", sectionId)
+    .single();
+
+  if (error) throw new Error(error.message);
+  if (!section) throw new Error("Section not found");
+
+  const validation = await validateSectionAI(
+    section.content,
+    section.section_type,
+    section.projects.academic_level
+  );
+
+  return validation;
 }

@@ -110,3 +110,29 @@ no meta-commentary. Aim for 3-5 well-developed paragraphs.`;
 
   return response.text.trim();
 }
+
+export async function validateSectionAI(content, sectionType, academicLevel) {
+  const prompt = `Evaluate the following "${sectionType}" section of a 
+${academicLevel}-level academic thesis:
+
+"${content}"
+
+Check for: clarity, logical structure, academic tone, depth appropriate 
+to the ${academicLevel} level, and whether it fulfills the typical 
+purpose of a ${sectionType} section.
+
+Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
+{
+  "score": <number 0-100>,
+  "strengths": [<string>, ...],
+  "weaknesses": [<string>, ...],
+  "recommendations": [<string>, ...]
+}`;
+
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: prompt
+  });
+
+  return extractJson(response.text);
+}
