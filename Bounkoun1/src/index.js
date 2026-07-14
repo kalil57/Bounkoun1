@@ -9,6 +9,7 @@ import questionRouter from "./routes/question.js";
 import workflowRouter from "./routes/workflow.js";
 import eventsRouter from "./routes/events.js";
 import sectionsRouter from "./routes/sections.js";
+import exportRouter from "./routes/export.js";
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ app.use("/question", questionRouter);
 app.use("/workflow", workflowRouter);
 app.use("/events", eventsRouter);
 app.use("/sections", sectionsRouter);
+app.use("/export", exportRouter);
 
 // Health check
 app.get("/", (req, res) => {
