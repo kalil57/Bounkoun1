@@ -1,5 +1,5 @@
 import { supabase } from "../db/supabaseClient.js";
-import { generateSectionDraft, validateSectionAI, generateOutline } from "../services/aiService.js";
+import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords } from "../services/aiService.js";
 import { AppError } from "../utils/AppError.js";
 
 export async function createOutline(projectId) {
@@ -122,4 +122,41 @@ export async function validateSection(sectionId) {
 
   return validation;
 }
+
+export async function generateAbstract(projectId) {
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .single();
+
+  if (projectError || !project) throw new AppError(404, "Project not found");
+
+  const { data: chapters, error } = await supabase
+    .from("sections")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("level", 1)
+    .order("order_index", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  const incomplete = chapters.filter((c) => !c.content);
+  if (chapters.length === 0 || incomplete.length > 0) {
+    throw new AppError(400, `Cannot generate abstract yet — these chapters still need drafts: ${incomplete.map((c) => c.title).join(", ") || "no outline exists yet"}`);
+  }
+
+  const result = await generateAbstractAndKeywords(project, chapters);
+
+  const { data: updated, error: updateError } = await supabase
+    .from("projects")
+    .update({ abstract: result.abstract, keywords: result.keywords })
+    .eq("id", projectId)
+    .select()
+    .single();
+
+  if (updateError) throw new Error(updateError.message);
+  return updated;
+}
+
 

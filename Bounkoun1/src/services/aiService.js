@@ -171,3 +171,41 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
 
   return extractJson(response.text);
 }
+
+export async function generateAbstractAndKeywords(project, sectionsContent) {
+  const combinedContent = sectionsContent
+    .map((s) => `${s.section_number} ${s.title}\n${s.content}`)
+    .join("\n\n");
+
+  const prompt = `You are an academic thesis advisor. Based on the 
+following complete thesis content, write a proper academic abstract 
+and a list of keywords.
+
+Thesis Title/Topic: ${project.selected_topic}
+Academic Level: ${project.academic_level}
+Discipline: ${project.discipline}
+
+Full thesis content:
+${combinedContent}
+
+The abstract must be 150-250 words, written so a reader understands 
+the entire thesis — purpose, approach, and conclusions — from reading 
+only the abstract. Do not use headers or labels within the abstract 
+text itself.
+
+Provide 4-6 relevant academic keywords.
+
+Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
+{
+  "abstract": "<the abstract text>",
+  "keywords": ["keyword1", "keyword2", ...]
+}`;
+
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: prompt
+  });
+
+  return extractJson(response.text);
+}
+

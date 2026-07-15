@@ -5,7 +5,8 @@ import {
   getOutline,
   generateDraftForOutlineItem,
   submitSectionData,
-  validateSection
+  validateSection,
+  generateAbstract
 } from "../controllers/sectionsController.js";
 
 const router = express.Router();
@@ -49,6 +50,15 @@ router.post("/:sectionId/generate", requireAuth, async (req, res) => {
 router.post("/:sectionId/validate", requireAuth, async (req, res) => {
   try {
     const result = await validateSection(req.params.sectionId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+router.post("/:projectId/abstract", requireAuth, async (req, res) => {
+  try {
+    const result = await generateAbstract(req.params.projectId);
     res.status(200).json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });

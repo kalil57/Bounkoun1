@@ -15,18 +15,11 @@ async function getProjectWithSections(projectId) {
     .from("sections")
     .select("*")
     .eq("project_id", projectId)
-    .order("created_at", { ascending: true });
+    .order("order_index", { ascending: true });
 
   if (sectionsError) throw new Error(sectionsError.message);
 
   return { project, sections: sections || [] };
-}
-
-function sectionTitle(sectionType) {
-  return sectionType
-    .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (s) => s.toUpperCase())
-    .trim();
 }
 
 export async function exportMarkdown(projectId) {
@@ -40,13 +33,21 @@ export async function exportMarkdown(projectId) {
     md += `**Topic:** ${project.selected_topic}\n\n`;
   }
 
+  if (project.abstract) {
+    md += `## Abstract\n\n${project.abstract}\n\n`;
+  }
+  if (project.keywords && project.keywords.length > 0) {
+    md += `**Keywords:** ${project.keywords.join(", ")}\n\n`;
+  }
+
   if (sections.length === 0) {
     md += `_No sections have been drafted yet._\n`;
   }
 
   for (const section of sections) {
-    md += `## ${sectionTitle(section.section_type)}\n\n`;
-    md += `${section.content}\n\n`;
+    const heading = "#".repeat(Math.min(section.level + 1, 6));
+    md += `${heading} ${section.section_number}. ${section.title}\n\n`;
+    md += section.content ? `${section.content}\n\n` : `_Not yet drafted._\n\n`;
   }
 
   return md;
@@ -61,15 +62,21 @@ export async function exportDocx(projectId) {
     new Paragraph({ text: `Academic Level: ${project.academic_level}` })
   ];
 
-  if (project.selected_topic) {
-    children.push(new Paragraph({ text: `Topic: ${project.selected_topic}` }));
+  if (project.abstract) {
+    children.push(new Paragraph({ text: "Abstract", heading: HeadingLevel.HEADING_1 }));
+    children.push(new Paragraph({ text: project.abstract }));
+  }
+  if (project.keywords && project.keywords.length > 0) {
+    children.push(new Paragraph({ text: `Keywords: ${project.keywords.join(", ")}` }));
   }
 
   for (const section of sections) {
+    const headingLevel = section.level === 1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2;
     children.push(
-      new Paragraph({ text: sectionTitle(section.section_type), heading: HeadingLevel.HEADING_1 })
+      new Paragraph({ text: `${section.section_number}. ${section.title}`, heading: headingLevel })
     );
-    const paragraphs = section.content.split("\n\n").filter(Boolean);
+    const content = section.content || "Not yet drafted.";
+    const paragraphs = content.split("\n\n").filter(Boolean);
     for (const p of paragraphs) {
       children.push(new Paragraph({ text: p }));
     }
@@ -78,3 +85,4 @@ export async function exportDocx(projectId) {
   const doc = new Document({ sections: [{ children }] });
   return await Packer.toBuffer(doc);
 }
+
