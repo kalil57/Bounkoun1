@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import searchRouter from "./routes/search.js";
 import papersRouter from "./routes/papers.js";
 import citationsRouter from "./routes/citations.js";
+import selectionRouter from "./routes/selection.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use("/search", searchRouter);
 app.use("/papers", papersRouter);
 app.use("/citations", citationsRouter);
+app.use("/selection", selectionRouter);
 
 // Health check route
 app.get("/", (req, res) => {

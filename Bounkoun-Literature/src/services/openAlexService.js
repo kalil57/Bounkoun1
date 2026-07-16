@@ -21,7 +21,7 @@ export function reconstructAbstract(invertedIndex) {
 export async function searchOpenAlex(query) {
   try {
     const email = "kaliljamal57@gmail.com";
-    const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&mailto=${email}`;
+    const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&mailto=${email}&per_page=40`;
     const response = await axios.get(url, {
       headers: {
         "User-Agent": "BounkounLiteratureService/1.0.0"
