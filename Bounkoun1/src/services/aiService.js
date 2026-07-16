@@ -209,3 +209,48 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
+export async function analyzeLiteratureAndRecommend(project, papers) {
+  const paperSummaries = papers
+    .map((p, i) => `[Paper ${i + 1}] "${p.title}" (${p.year || "n.d."})\nAuthors: ${(p.authors || []).join(", ")}\nAbstract: ${p.abstract || "No abstract available"}`)
+    .join("\n\n");
+
+  const prompt = `You are an academic research advisor. Below are 
+real, published papers the student has selected as relevant to their 
+thesis. Analyze ONLY these papers — do not invent or reference any 
+research not shown here.
+
+Student's Thesis Topic: ${project.selected_topic}
+Academic Level: ${project.academic_level}
+Discipline: ${project.discipline}
+
+Selected Papers:
+${paperSummaries}
+
+Based STRICTLY on what these papers actually studied (their research 
+questions, methods, and variables as evidenced in their abstracts), 
+recommend:
+1. A strong research question for the student's own thesis that builds 
+on gaps or patterns you observe across these real papers
+2. A rationale explaining your reasoning, explicitly referencing which 
+paper numbers informed which part of your recommendation
+3. Suggested variables or factors to examine, again grounded in what 
+these papers actually measured or discussed
+
+If the provided papers don't clearly support a strong recommendation, 
+say so honestly rather than inventing a confident-sounding one.
+
+Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
+{
+  "recommended_question": "<string>",
+  "rationale": "<string, must reference paper numbers like [Paper 2]>",
+  "suggested_variables": [<string>, ...]
+}`;
+
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: prompt
+  });
+
+  return extractJson(response.text);
+}
+
