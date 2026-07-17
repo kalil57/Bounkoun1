@@ -71,11 +71,18 @@ export async function generateDraftForOutlineItem(sectionId) {
     .eq("is_final", true)
     .single();
 
+  const { data: sourcePapers } = await supabase
+    .from("papers")
+    .select("title, authors, year")
+    .eq("project_id", section.project_id)
+    .eq("is_selected", true);
+
   const draft = await generateSectionDraft(
     section.projects,
     section.title,
     questionRow?.text,
-    section.user_data
+    section.user_data,
+    sourcePapers || []
   );
 
   const { data: updated, error: updateError } = await supabase

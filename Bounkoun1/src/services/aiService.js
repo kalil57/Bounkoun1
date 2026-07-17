@@ -79,29 +79,80 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
-export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData) {
+export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers) {
+  const levelGuides = {
+    Bachelor: `Use clear, accessible academic language. Favor 
+moderate-length sentences and a straightforward argument structure. 
+Introduce technical terms with brief definitions. Keep theoretical 
+discussion light -- focus on clear description, application, and 
+well-organized reasoning rather than deep critical synthesis of 
+competing theories.`,
+    Master: `Use sophisticated academic vocabulary and varied sentence 
+structure. Engage critically with existing theory and literature 
+rather than just describing it -- compare, contrast, and evaluate 
+competing perspectives. Show awareness of methodological nuance.`,
+    PhD: `Use precise, discipline-specific academic register with 
+complex, well-controlled sentence structures. Engage deeply and 
+critically with theoretical frameworks, situate the argument within 
+ongoing scholarly debates, and foreground original contribution. Use 
+careful academic hedging and nuance (acknowledging limitations, 
+alternative interpretations) without being vague.`
+  };
+  const levelGuide = levelGuides[project.academic_level] || levelGuides.Bachelor;
+
+  const citationBlock = sourcePapers && sourcePapers.length > 0
+    ? `You may cite these real, verified sources in-text using 
+(Author Surname, Year) format when a claim genuinely draws on them. 
+Only cite from this exact list -- never invent a citation or reference 
+any source not listed here. Not every sentence needs a citation; only 
+cite when making a specific claim, comparison, or finding that is 
+actually attributable to one of these works:\n\n${sourcePapers.map((p) => `- ${(p.authors && p.authors[0]) || "Unknown"}${p.authors && p.authors.length > 1 ? " et al." : ""} (${p.year || "n.d."}): "${p.title}"`).join("\n")}`
+    : `No verified sources are available for this section yet. Do NOT 
+include any citations, and do not reference any specific studies, 
+authors, or papers by name -- write generally instead.`;
+
   const dataInstruction = userData
     ? `The student has provided the following real research data/notes 
 for this section. Write it up clearly in formal academic prose. Do 
 NOT invent, add, or embellish any findings beyond what is given:\n\n${userData}`
     : `Write this section based on standard academic conventions for 
 this chapter type. Do not state specific numeric results, statistics, 
-or findings as if real data exists — this chapter does not report 
+or findings as if real data exists -- this chapter does not report 
 actual research results.`;
 
-  const prompt = `You are an academic thesis-writing assistant. Write 
-the "${sectionTitle}" section of a ${project.academic_level}-level 
-thesis.
+  const prompt = `You are an experienced human academic author helping 
+a ${project.academic_level} student write their thesis. Write the 
+"${sectionTitle}" section.
 
 Discipline: ${project.discipline}
 Topic: ${project.selected_topic || "Not yet selected"}
 Research Question: ${researchQuestion || "Not yet finalized"}
 
+WRITING VOICE -- CRITICAL:
+Write like an experienced human academic author, not a generic AI 
+assistant. Specifically:
+- Vary sentence length and structure naturally
+- Avoid repetitive, formulaic openers like "Furthermore," "Moreover," 
+"In conclusion," or "It is important to note that" appearing more than 
+once in the section
+- Avoid generic AI filler phrases and hedge-everything language
+- Write with a clear point of view and specific, confident claims 
+rather than vague generalities
+- Do not use bullet points or numbered lists inside the prose unless 
+the section genuinely calls for it
+- Do not include meta-commentary about what the section will do (e.g. 
+"This section will discuss...")
+
+ACADEMIC LEVEL CALIBRATION (${project.academic_level}):
+${levelGuide}
+
+SOURCE CITATION:
+${citationBlock}
+
 ${dataInstruction}
 
-Match the depth and tone to the academic level. Write only the section 
-content itself — no title, no markdown headers, no meta-commentary. 
-Aim for 2-4 well-developed paragraphs.`;
+Write only the section content itself -- no title, no markdown 
+headers. Aim for 2-4 well-developed paragraphs.`;
 
   const response = await client.models.generateContent({
     model: MODEL,
