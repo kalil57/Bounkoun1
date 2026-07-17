@@ -1,6 +1,6 @@
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { createProject, getProjectById, getAllProjects } from "../controllers/projectsController.js";
+import { createProject, getProjectById, getAllProjects, updateStylePreference } from "../controllers/projectsController.js";
 
 const router = express.Router();
 
@@ -26,6 +26,15 @@ router.get("/", requireAuth, async (req, res) => {
   try {
     const projects = await getAllProjects(req.user.id);
     res.status(200).json(projects);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+router.patch("/:id/style-preference", requireAuth, async (req, res) => {
+  try {
+    const result = await updateStylePreference(req.params.id, req.body.style_preference);
+    res.status(200).json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
   }

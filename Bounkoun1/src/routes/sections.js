@@ -6,7 +6,8 @@ import {
   generateDraftForOutlineItem,
   submitSectionData,
   validateSection,
-  generateAbstract
+  generateAbstract,
+  editSectionContent
 } from "../controllers/sectionsController.js";
 
 const router = express.Router();
@@ -65,5 +66,13 @@ router.post("/:projectId/abstract", requireAuth, async (req, res) => {
   }
 });
 
-export default router;
+router.patch("/:sectionId/edit", requireAuth, async (req, res) => {
+  try {
+    const result = await editSectionContent(req.params.sectionId, req.body.content);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
 
+export default router;

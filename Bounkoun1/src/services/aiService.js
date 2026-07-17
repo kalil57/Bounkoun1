@@ -79,7 +79,7 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
-export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers) {
+export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers, stylePreference) {
   const levelGuides = {
     Bachelor: `Use clear, accessible academic language. Favor 
 moderate-length sentences and a straightforward argument structure. 
@@ -120,6 +120,12 @@ this chapter type. Do not state specific numeric results, statistics,
 or findings as if real data exists -- this chapter does not report 
 actual research results.`;
 
+  const styleBlock = stylePreference && stylePreference.trim()
+    ? `\n\nThe student has specified this personal writing style 
+preference -- follow it as closely as possible while still maintaining 
+academic rigor: "${stylePreference}"`
+    : "";
+
   const prompt = `You are an experienced human academic author helping 
 a ${project.academic_level} student write their thesis. Write the 
 "${sectionTitle}" section.
@@ -152,7 +158,7 @@ ${citationBlock}
 ${dataInstruction}
 
 Write only the section content itself -- no title, no markdown 
-headers. Aim for 2-4 well-developed paragraphs.`;
+headers. Aim for 2-4 well-developed paragraphs.${styleBlock}`;
 
   const response = await client.models.generateContent({
     model: MODEL,

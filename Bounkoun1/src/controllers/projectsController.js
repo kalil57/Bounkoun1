@@ -51,3 +51,15 @@ export async function getAllProjects(userId) {
   if (error) throw new Error(error.message);
   return projects;
 }
+
+export async function updateStylePreference(projectId, stylePreference) {
+  const { data, error } = await supabase
+    .from("projects")
+    .update({ style_preference: stylePreference })
+    .eq("id", projectId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}

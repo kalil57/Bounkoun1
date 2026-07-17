@@ -82,7 +82,8 @@ export async function generateDraftForOutlineItem(sectionId) {
     section.title,
     questionRow?.text,
     section.user_data,
-    sourcePapers || []
+    sourcePapers || [],
+    section.projects.style_preference
   );
 
   const { data: updated, error: updateError } = await supabase
@@ -166,4 +167,18 @@ export async function generateAbstract(projectId) {
   return updated;
 }
 
+export async function editSectionContent(sectionId, content) {
+  if (typeof content !== "string" || content.trim() === "") {
+    throw new AppError(400, "Missing required field: content");
+  }
 
+  const { data, error } = await supabase
+    .from("sections")
+    .update({ content, status: "manually_edited" })
+    .eq("id", sectionId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
