@@ -49,3 +49,16 @@ export async function validateResearchQuestion(projectId, question) {
   const validation = await validateResearchQuestionAI(question, level);
   return validation;
 }
+
+// Get all research questions
+export async function getAllQuestions(projectId) {
+  const { data, error } = await supabase
+    .from("research_questions")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
