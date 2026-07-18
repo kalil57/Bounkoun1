@@ -2,7 +2,7 @@ import { searchOpenAlex } from "./openAlexService.js";
 import { supabase } from "../db/supabaseClient.js";
 import { summarizeAbstract, extractCitations } from "./aiService.js";
 
-export async function performLiteratureSearch(projectId, query) {
+export async function performLiteratureSearch(projectId, query, preFetchedPapers) {
   // 1. Log search in database
   try {
     await supabase.from("literature_searches").insert({
@@ -13,8 +13,8 @@ export async function performLiteratureSearch(projectId, query) {
     console.warn("Failed to log literature search in database:", error.message);
   }
 
-  // 2. Fetch papers from OpenAlex
-  const papers = await searchOpenAlex(query);
+  // 2. Fetch papers from OpenAlex if not pre-fetched
+  const papers = preFetchedPapers || await searchOpenAlex(query);
 
   // 3. Save papers to database
   const savedPapers = [];
