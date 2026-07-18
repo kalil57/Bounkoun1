@@ -79,7 +79,7 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
-export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers, stylePreference) {
+export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers, stylePreference, citationStyle, formalityPreset) {
   const levelGuides = {
     Bachelor: `Use clear, accessible academic language. Favor 
 moderate-length sentences and a straightforward argument structure. 
@@ -100,9 +100,18 @@ alternative interpretations) without being vague.`
   };
   const levelGuide = levelGuides[project.academic_level] || levelGuides.Bachelor;
 
+  let citationInstruction = `You may cite these real, verified sources in-text using 
+(Author Surname, Year) format when a claim genuinely draws on them.`;
+  if (citationStyle) {
+    citationInstruction = `You may cite these real, verified sources in-text in the specified citation_style format (${citationStyle}) when a claim genuinely draws on them. For reference, format citations as:
+- APA: (Author, Year) or Author (Year)
+- MLA: (Author Page) or Author (Page)
+- Chicago: (Author Year, Page) or footnote style
+- GBT7714: [Number] corresponding to the source, or standard Chinese GBT7714 format`;
+  }
+
   const citationBlock = sourcePapers && sourcePapers.length > 0
-    ? `You may cite these real, verified sources in-text using 
-(Author Surname, Year) format when a claim genuinely draws on them. 
+    ? `${citationInstruction} 
 Only cite from this exact list -- never invent a citation or reference 
 any source not listed here. Not every sentence needs a citation; only 
 cite when making a specific claim, comparison, or finding that is 
@@ -126,6 +135,15 @@ preference -- follow it as closely as possible while still maintaining
 academic rigor: "${stylePreference}"`
     : "";
 
+  const formalityGuides = {
+    Formal: "- Tone: Formal. Traditional academic distance, structured, passive or objective voice, highly rigorous and detached.",
+    Analytical: "- Tone: Analytical. Critical and evaluative, active engagement, comparing viewpoints, probing assumptions, and evaluating evidence critically.",
+    Direct: "- Tone: Direct. Clear and concise with minimal hedging, straightforward and active voice, avoiding unnecessary wordiness."
+  };
+  const formalityBlock = formalityPreset && formalityGuides[formalityPreset]
+    ? `\n${formalityGuides[formalityPreset]}`
+    : "";
+
   const prompt = `You are an experienced human academic author helping 
 a ${project.academic_level} student write their thesis. Write the 
 "${sectionTitle}" section.
@@ -147,7 +165,7 @@ rather than vague generalities
 - Do not use bullet points or numbered lists inside the prose unless 
 the section genuinely calls for it
 - Do not include meta-commentary about what the section will do (e.g. 
-"This section will discuss...")
+"This section will discuss...")${formalityBlock}
 
 ACADEMIC LEVEL CALIBRATION (${project.academic_level}):
 ${levelGuide}

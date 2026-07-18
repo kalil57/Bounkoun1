@@ -64,6 +64,25 @@ export async function generateDraftForOutlineItem(sectionId) {
     throw new AppError(400, "This section requires real research data before it can be drafted. Submit your data first via /sections/:sectionId/submit-data");
   }
 
+  const titleLower = (section.title || "").toLowerCase();
+  if (titleLower.includes("discussion") || titleLower.includes("conclusion")) {
+    const { data: levelOneSections, error: sectionsError } = await supabase
+      .from("sections")
+      .select("content, section_type")
+      .eq("project_id", section.project_id)
+      .eq("level", 1);
+
+    if (sectionsError) throw new Error(sectionsError.message);
+
+    const findingsSections = (levelOneSections || []).filter(s => 
+      s.section_type && s.section_type.includes("findings")
+    );
+    const hasDraftedFindings = findingsSections.some(s => s.content && s.content.trim() !== "");
+    if (!hasDraftedFindings) {
+      throw new AppError(400, "Findings must be drafted before Discussion or Conclusion sections, since they should be built on actual results.");
+    }
+  }
+
   const { data: questionRow } = await supabase
     .from("research_questions")
     .select("text")
@@ -83,7 +102,9 @@ export async function generateDraftForOutlineItem(sectionId) {
     questionRow?.text,
     section.user_data,
     sourcePapers || [],
-    section.projects.style_preference
+    section.projects.style_preference,
+    section.projects.citation_style,
+    section.projects.formality_preset
   );
 
   const { data: updated, error: updateError } = await supabase

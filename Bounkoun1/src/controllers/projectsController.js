@@ -52,10 +52,29 @@ export async function getAllProjects(userId) {
   return projects;
 }
 
-export async function updateStylePreference(projectId, stylePreference) {
+export async function updateStylePreference(projectId, { style_preference, citation_style, formality_preset } = {}) {
+  const updateData = {};
+  if (style_preference !== undefined) updateData.style_preference = style_preference;
+
+  if (citation_style !== undefined) {
+    const validStyles = ["APA", "MLA", "Chicago", "GBT7714"];
+    if (citation_style !== null && citation_style !== "" && !validStyles.includes(citation_style)) {
+      throw new AppError(400, `Invalid citation style. Must be one of: ${validStyles.join(", ")}`);
+    }
+    updateData.citation_style = citation_style;
+  }
+
+  if (formality_preset !== undefined) {
+    const validPresets = ["Formal", "Analytical", "Direct"];
+    if (formality_preset !== null && formality_preset !== "" && !validPresets.includes(formality_preset)) {
+      throw new AppError(400, `Invalid formality preset. Must be one of: ${validPresets.join(", ")}`);
+    }
+    updateData.formality_preset = formality_preset;
+  }
+
   const { data, error } = await supabase
     .from("projects")
-    .update({ style_preference: stylePreference })
+    .update(updateData)
     .eq("id", projectId)
     .select()
     .single();

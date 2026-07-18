@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS projects (
   academic_level TEXT NOT NULL,
   selected_topic TEXT,
   status TEXT DEFAULT 'topic_pending',
+  style_preference TEXT,
+  citation_style TEXT CHECK (citation_style IN ('APA', 'MLA', 'Chicago', 'GBT7714')),
+  formality_preset TEXT CHECK (formality_preset IN ('Formal', 'Analytical', 'Direct')),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
