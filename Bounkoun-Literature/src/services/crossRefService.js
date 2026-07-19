@@ -3,7 +3,7 @@ import axios from "axios";
 export async function searchCrossRef(query) {
   try {
     const email = "kaliljamal57@gmail.com";
-    const url = `https://api.crossref.org/works?query=${encodeURIComponent(query)}&rows=20&mailto=${email}`;
+    const url = `https://api.crossref.org/works?query=${encodeURIComponent(query)}&rows=100&mailto=${email}`;
     const response = await axios.get(url, {
       headers: {
         "User-Agent": "BounkounLiteratureService/1.0.0"
