@@ -73,7 +73,11 @@ export async function exportDocx(projectId) {
   for (const section of sections) {
     const headingLevel = section.level === 1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2;
     children.push(
-      new Paragraph({ text: `${section.section_number}. ${section.title}`, heading: headingLevel })
+      new Paragraph({
+        text: `${section.section_number}. ${section.title}`,
+        heading: headingLevel,
+        pageBreakBefore: section.level === 1
+      })
     );
     const content = section.content || "Not yet drafted.";
     const paragraphs = content.split("\n\n").filter(Boolean);
