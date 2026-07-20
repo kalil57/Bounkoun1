@@ -6,6 +6,7 @@ import searchRouter from "./routes/search.js";
 import papersRouter from "./routes/papers.js";
 import citationsRouter from "./routes/citations.js";
 import selectionRouter from "./routes/selection.js";
+import uploadRouter from "./routes/upload.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use("/search", searchRouter);
 app.use("/papers", papersRouter);
 app.use("/citations", citationsRouter);
 app.use("/selection", selectionRouter);
+app.use("/upload", uploadRouter);
 
 // Health check route
 app.get("/", (req, res) => {

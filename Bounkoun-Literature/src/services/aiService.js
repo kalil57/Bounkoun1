@@ -53,3 +53,34 @@ Do not return any explanations, markdown code blocks, or preamble. Return just t
     throw new Error(`AI citation extraction failed: ${error.message}`);
   }
 }
+
+export async function extractPaperMetadata(text) {
+  const prompt = `Extract bibliographic metadata from this academic paper's text. Return ONLY a JSON object, no markdown, no extra text:
+{
+  "title": "<string>",
+  "authors": ["<string>", ...],
+  "year": <number or null>,
+  "abstract": "<string, first 2-3 sentences summarizing the paper, or null if unclear>"
+}
+
+Paper text:
+${text}`;
+
+  try {
+    const response = await client.models.generateContent({
+      model: MODEL,
+      contents: prompt
+    });
+    let raw = response.text.trim();
+    if (raw.startsWith("```json")) {
+      raw = raw.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+    } else if (raw.startsWith("```")) {
+      raw = raw.replace(/^```/i, "").replace(/```\s*$/i, "").trim();
+    }
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Metadata extraction failed:", error.message);
+    return { title: null, authors: [], year: null, abstract: null };
+  }
+}
+
