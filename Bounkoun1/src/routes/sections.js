@@ -7,7 +7,8 @@ import {
   submitSectionData,
   validateSection,
   generateAbstract,
-  editSectionContent
+  editSectionContent,
+  updateSectionTitle
 } from "../controllers/sectionsController.js";
 
 const router = express.Router();
@@ -69,6 +70,15 @@ router.post("/:projectId/abstract", requireAuth, async (req, res) => {
 router.patch("/:sectionId/edit", requireAuth, async (req, res) => {
   try {
     const result = await editSectionContent(req.params.sectionId, req.body.content);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+router.patch("/:sectionId/title", requireAuth, async (req, res) => {
+  try {
+    const result = await updateSectionTitle(req.params.sectionId, req.body.title);
     res.status(200).json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });

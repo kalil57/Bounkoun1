@@ -203,3 +203,20 @@ export async function editSectionContent(sectionId, content) {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function updateSectionTitle(sectionId, newTitle) {
+  if (typeof newTitle !== "string" || newTitle.trim() === "") {
+    throw new AppError(400, "Missing required field: title");
+  }
+
+  const { data, error } = await supabase
+    .from("sections")
+    .update({ title: newTitle })
+    .eq("id", sectionId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
