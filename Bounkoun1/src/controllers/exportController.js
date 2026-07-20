@@ -90,3 +90,47 @@ export async function exportDocx(projectId) {
   return await Packer.toBuffer(doc);
 }
 
+export async function exportPdf(projectId) {
+  const { project, sections } = await getProjectWithSections(projectId);
+  const PDFDocument = (await import("pdfkit")).default;
+
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50 });
+    const chunks = [];
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+
+    doc.fontSize(20).font("Helvetica-Bold").text(project.title, { align: "center" });
+    doc.moveDown();
+    doc.fontSize(11).font("Helvetica").text(`Discipline: ${project.discipline}`);
+    doc.text(`Academic Level: ${project.academic_level}`);
+    doc.moveDown();
+
+    if (project.abstract) {
+      doc.fontSize(14).font("Helvetica-Bold").text("Abstract");
+      doc.fontSize(11).font("Helvetica").text(project.abstract, { align: "justify" });
+      doc.moveDown();
+    }
+    if (project.keywords && project.keywords.length > 0) {
+      doc.fontSize(10).font("Helvetica-Oblique").text(`Keywords: ${project.keywords.join(", ")}`);
+      doc.moveDown();
+    }
+
+    for (const section of sections) {
+      if (section.level === 1) {
+        doc.addPage();
+        doc.fontSize(16).font("Helvetica-Bold").text(`${section.section_number}. ${section.title}`);
+      } else {
+        doc.moveDown();
+        doc.fontSize(13).font("Helvetica-Bold").text(`${section.section_number}. ${section.title}`);
+      }
+      doc.moveDown(0.5);
+      const content = section.content || "Not yet drafted.";
+      doc.fontSize(11).font("Helvetica").text(content, { align: "justify" });
+    }
+
+    doc.end();
+  });
+}
+

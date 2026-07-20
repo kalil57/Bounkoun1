@@ -1,5 +1,5 @@
 import express from "express";
-import { exportMarkdown, exportDocx } from "../controllers/exportController.js";
+import { exportMarkdown, exportDocx, exportPdf } from "../controllers/exportController.js";
 
 const router = express.Router();
 
@@ -19,6 +19,17 @@ router.get("/:projectId/docx", async (req, res) => {
     const buffer = await exportDocx(req.params.projectId);
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
     res.setHeader("Content-Disposition", `attachment; filename="thesis-${req.params.projectId}.docx"`);
+    res.send(buffer);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+router.get("/:projectId/pdf", async (req, res) => {
+  try {
+    const buffer = await exportPdf(req.params.projectId);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="thesis-${req.params.projectId}.pdf"`);
     res.send(buffer);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
