@@ -1,6 +1,6 @@
 import { supabase } from "../db/supabaseClient.js";
 import { extractPaperMetadata } from "../services/aiService.js";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 
 export async function handleUpload(req, res) {
   try {
@@ -9,8 +9,10 @@ export async function handleUpload(req, res) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const parsed = await pdfParse(req.file.buffer);
-    const text = parsed.text.slice(0, 8000);
+    const parser = new PDFParse({ data: req.file.buffer });
+    const result = await parser.getText();
+    await parser.destroy();
+    const text = result.text.slice(0, 8000);
 
     const metadata = await extractPaperMetadata(text);
 
