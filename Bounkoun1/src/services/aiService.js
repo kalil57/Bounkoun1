@@ -329,3 +329,46 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
+export async function generateWritingGuidance(project, sectionTitle, researchQuestion, currentDraft) {
+  const draftContext = currentDraft && currentDraft.trim()
+    ? `The student has written this so far:\n\n"${currentDraft}"\n\nGive guidance on how to continue from here.`
+    : `The student hasn't written anything yet for this section and 
+needs help getting started.`;
+
+  const prompt = `You are a patient, encouraging academic writing 
+advisor helping a ${project.academic_level} student. You are 
+NOT writing this section for them -- you are coaching them through 
+writing it themselves.
+
+Discipline: ${project.discipline}
+Topic: ${project.selected_topic || "Not yet selected"}
+Research Question: ${researchQuestion || "Not yet finalized"}
+Section: "${sectionTitle}"
+
+${draftContext}
+
+Give guidance in this style:
+- 2-3 sentences on what this section should accomplish and why
+- 3-4 specific, concrete questions or prompts the student should think 
+through and answer in their own words (not filled-in examples -- 
+genuine open questions that require their own thinking)
+- One sentence of encouragement
+
+Do NOT write example paragraphs or model text for them to copy. Coach, 
+don't ghostwrite.
+
+Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
+{
+  "purpose": "<string>",
+  "guiding_questions": [<string>, ...],
+  "encouragement": "<string>"
+}`;
+
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: prompt
+  });
+
+  return extractJson(response.text);
+}
+

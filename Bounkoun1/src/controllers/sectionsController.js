@@ -1,5 +1,5 @@
 import { supabase } from "../db/supabaseClient.js";
-import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords } from "../services/aiService.js";
+import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords, generateWritingGuidance } from "../services/aiService.js";
 import { AppError } from "../utils/AppError.js";
 
 export async function createOutline(projectId) {
@@ -218,5 +218,29 @@ export async function updateSectionTitle(sectionId, newTitle) {
 
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function getWritingGuidance(sectionId, currentDraft) {
+  const { data: section, error } = await supabase
+    .from("sections")
+    .select("*, projects(*)")
+    .eq("id", sectionId)
+    .single();
+
+  if (error || !section) throw new AppError(404, "Section not found");
+
+  const { data: questionRow } = await supabase
+    .from("research_questions")
+    .select("text")
+    .eq("project_id", section.project_id)
+    .eq("is_final", true)
+    .single();
+
+  return await generateWritingGuidance(
+    section.projects,
+    section.title,
+    questionRow?.text,
+    currentDraft
+  );
 }
 

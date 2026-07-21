@@ -8,7 +8,8 @@ import {
   validateSection,
   generateAbstract,
   editSectionContent,
-  updateSectionTitle
+  updateSectionTitle,
+  getWritingGuidance
 } from "../controllers/sectionsController.js";
 
 const router = express.Router();
@@ -79,6 +80,15 @@ router.patch("/:sectionId/edit", requireAuth, async (req, res) => {
 router.patch("/:sectionId/title", requireAuth, async (req, res) => {
   try {
     const result = await updateSectionTitle(req.params.sectionId, req.body.title);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+router.post("/:sectionId/guidance", requireAuth, async (req, res) => {
+  try {
+    const result = await getWritingGuidance(req.params.sectionId, req.body.current_draft);
     res.status(200).json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
