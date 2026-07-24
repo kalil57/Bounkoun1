@@ -1,6 +1,11 @@
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { createProject, getProjectById, getAllProjects, updateStylePreference } from "../controllers/projectsController.js";
+import {
+  createProject,
+  getProjectById,
+  getAllProjects,
+  updateStylePreference
+} from "../controllers/projectsController.js";
 
 const router = express.Router();
 
@@ -33,12 +38,14 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.patch("/:id/style-preference", requireAuth, async (req, res) => {
   try {
-    const { style_preference, citation_style, formality_preset, writing_language } = req.body;
+    const { style_preference, citation_style, formality_preset, writing_language, font_family, font_size } = req.body;
     const result = await updateStylePreference(req.params.id, {
       style_preference,
       citation_style,
       formality_preset,
-      writing_language
+      writing_language,
+      font_family,
+      font_size
     });
     res.status(200).json(result);
   } catch (error) {

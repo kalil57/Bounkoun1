@@ -5,7 +5,6 @@ import { AppError } from "../utils/AppError.js";
 // Create a new project
 export async function createProject(data, userId) {
   const { title, discipline, academic_level } = data;
-
   if (!title || !discipline || !academic_level) {
     throw new AppError(400, "Missing required fields: title, discipline, academic_level");
   }
@@ -25,7 +24,6 @@ export async function createProject(data, userId) {
   if (error) throw new Error(error.message);
 
   await initializeDefaultWorkflowSteps(project.id);
-
   return project;
 }
 
@@ -52,8 +50,9 @@ export async function getAllProjects(userId) {
   return projects;
 }
 
-export async function updateStylePreference(projectId, { style_preference, citation_style, formality_preset, writing_language } = {}) {
+export async function updateStylePreference(projectId, { style_preference, citation_style, formality_preset, writing_language, font_family, font_size } = {}) {
   const updateData = {};
+
   if (style_preference !== undefined) updateData.style_preference = style_preference;
 
   if (citation_style !== undefined) {
@@ -78,6 +77,23 @@ export async function updateStylePreference(projectId, { style_preference, citat
       throw new AppError(400, `Invalid writing language. Must be one of: ${validLanguages.join(", ")}`);
     }
     updateData.writing_language = writing_language;
+  }
+
+  if (font_family !== undefined) {
+    const validFamilies = ["Times New Roman", "Arial", "Calibri", "Cambria", "Georgia"];
+    if (font_family !== null && font_family !== "" && !validFamilies.includes(font_family)) {
+      throw new AppError(400, `Invalid font family. Must be one of: ${validFamilies.join(", ")}`);
+    }
+    updateData.font_family = font_family;
+  }
+
+  if (font_size !== undefined) {
+    const validSizes = [10, 11, 12, 14, 16];
+    const sizeNum = Number(font_size);
+    if (font_size !== null && font_size !== "" && !validSizes.includes(sizeNum)) {
+      throw new AppError(400, `Invalid font size. Must be one of: ${validSizes.join(", ")}`);
+    }
+    updateData.font_size = font_size !== null && font_size !== "" ? sizeNum : font_size;
   }
 
   const { data, error } = await supabase
