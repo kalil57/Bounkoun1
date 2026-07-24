@@ -52,7 +52,7 @@ export async function getAllProjects(userId) {
   return projects;
 }
 
-export async function updateStylePreference(projectId, { style_preference, citation_style, formality_preset } = {}) {
+export async function updateStylePreference(projectId, { style_preference, citation_style, formality_preset, writing_language } = {}) {
   const updateData = {};
   if (style_preference !== undefined) updateData.style_preference = style_preference;
 
@@ -70,6 +70,14 @@ export async function updateStylePreference(projectId, { style_preference, citat
       throw new AppError(400, `Invalid formality preset. Must be one of: ${validPresets.join(", ")}`);
     }
     updateData.formality_preset = formality_preset;
+  }
+
+  if (writing_language !== undefined) {
+    const validLanguages = ["English", "Chinese"];
+    if (writing_language !== null && writing_language !== "" && !validLanguages.includes(writing_language)) {
+      throw new AppError(400, `Invalid writing language. Must be one of: ${validLanguages.join(", ")}`);
+    }
+    updateData.writing_language = writing_language;
   }
 
   const { data, error } = await supabase

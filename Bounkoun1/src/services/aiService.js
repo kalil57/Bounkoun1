@@ -79,7 +79,7 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
-export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers, stylePreference, citationStyle, formalityPreset) {
+export async function generateSectionDraft(project, sectionTitle, researchQuestion, userData, sourcePapers, stylePreference, citationStyle, formalityPreset, writingLanguage) {
   const levelGuides = {
     Bachelor: `Use clear, accessible academic language. Favor 
 moderate-length sentences and a straightforward argument structure. 
@@ -135,6 +135,10 @@ preference -- follow it as closely as possible while still maintaining
 academic rigor: "${stylePreference}"`
     : "";
 
+  const languageBlock = writingLanguage === "Chinese"
+    ? `\n\nWrite this entire section in Chinese (中文), using formal academic Chinese thesis-writing conventions. Citations should still follow the specified citation format, but all prose must be in Chinese.`
+    : "";
+
   const formalityGuides = {
     Formal: "- Tone: Formal. Traditional academic distance, structured, passive or objective voice, highly rigorous and detached.",
     Analytical: "- Tone: Analytical. Critical and evaluative, active engagement, comparing viewpoints, probing assumptions, and evaluating evidence critically.",
@@ -176,7 +180,7 @@ ${citationBlock}
 ${dataInstruction}
 
 Write only the section content itself -- no title, no markdown 
-headers. Aim for 2-4 well-developed paragraphs.${styleBlock}`;
+headers. Aim for 2-4 well-developed paragraphs.${styleBlock}${languageBlock}`;
 
   const response = await client.models.generateContent({
     model: MODEL,

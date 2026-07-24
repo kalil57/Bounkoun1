@@ -104,7 +104,8 @@ export async function generateDraftForOutlineItem(sectionId) {
     sourcePapers || [],
     section.projects.style_preference,
     section.projects.citation_style,
-    section.projects.formality_preset
+    section.projects.formality_preset,
+    section.projects.writing_language
   );
 
   const { data: updated, error: updateError } = await supabase

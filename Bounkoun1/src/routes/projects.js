@@ -33,11 +33,12 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.patch("/:id/style-preference", requireAuth, async (req, res) => {
   try {
-    const { style_preference, citation_style, formality_preset } = req.body;
+    const { style_preference, citation_style, formality_preset, writing_language } = req.body;
     const result = await updateStylePreference(req.params.id, {
       style_preference,
       citation_style,
-      formality_preset
+      formality_preset,
+      writing_language
     });
     res.status(200).json(result);
   } catch (error) {
