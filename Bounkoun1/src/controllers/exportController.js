@@ -1,5 +1,5 @@
 import { supabase } from "../db/supabaseClient.js";
-import { Document, Packer, Paragraph, HeadingLevel } from "docx";
+import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
 import { AppError } from "../utils/AppError.js";
 
 async function getProjectWithSections(projectId) {
@@ -36,6 +36,7 @@ export async function exportMarkdown(projectId) {
   if (project.abstract) {
     md += `## Abstract\n\n${project.abstract}\n\n`;
   }
+
   if (project.keywords && project.keywords.length > 0) {
     md += `**Keywords:** ${project.keywords.join(", ")}\n\n`;
   }
@@ -66,6 +67,7 @@ export async function exportDocx(projectId) {
     children.push(new Paragraph({ text: "Abstract", heading: HeadingLevel.HEADING_1 }));
     children.push(new Paragraph({ text: project.abstract }));
   }
+
   if (project.keywords && project.keywords.length > 0) {
     children.push(new Paragraph({ text: `Keywords: ${project.keywords.join(", ")}` }));
   }
@@ -79,10 +81,15 @@ export async function exportDocx(projectId) {
         pageBreakBefore: section.level === 1
       })
     );
+
     const content = section.content || "Not yet drafted.";
     const paragraphs = content.split("\n\n").filter(Boolean);
+    const fontFamily = project.font_family || "Times New Roman";
+    const fontSizeHalfPoints = (project.font_size || 12) * 2;
     for (const p of paragraphs) {
-      children.push(new Paragraph({ text: p }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: p, font: fontFamily, size: fontSizeHalfPoints })]
+      }));
     }
   }
 
@@ -92,10 +99,22 @@ export async function exportDocx(projectId) {
 
 export async function exportPdf(projectId) {
   const { project, sections } = await getProjectWithSections(projectId);
+
   const PDFDocument = (await import("pdfkit")).default;
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 50 });
+
+    const pdfFontMap = {
+      "Times New Roman": "Times-Roman",
+      "Arial": "Helvetica",
+      "Calibri": "Helvetica",
+      "Cambria": "Times-Roman",
+      "Georgia": "Times-Roman"
+    };
+    const pdfFont = pdfFontMap[project.font_family] || "Times-Roman";
+    const bodyFontSize = project.font_size || 11;
+
     const chunks = [];
     doc.on("data", (chunk) => chunks.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(chunks)));
@@ -109,9 +128,10 @@ export async function exportPdf(projectId) {
 
     if (project.abstract) {
       doc.fontSize(14).font("Helvetica-Bold").text("Abstract");
-      doc.fontSize(11).font("Helvetica").text(project.abstract, { align: "justify" });
+      doc.fontSize(bodyFontSize).font(pdfFont).text(project.abstract, { align: "justify" });
       doc.moveDown();
     }
+
     if (project.keywords && project.keywords.length > 0) {
       doc.fontSize(10).font("Helvetica-Oblique").text(`Keywords: ${project.keywords.join(", ")}`);
       doc.moveDown();
@@ -126,11 +146,11 @@ export async function exportPdf(projectId) {
         doc.fontSize(13).font("Helvetica-Bold").text(`${section.section_number}. ${section.title}`);
       }
       doc.moveDown(0.5);
+
       const content = section.content || "Not yet drafted.";
-      doc.fontSize(11).font("Helvetica").text(content, { align: "justify" });
+      doc.fontSize(bodyFontSize).font(pdfFont).text(content, { align: "justify" });
     }
 
     doc.end();
   });
 }
-
