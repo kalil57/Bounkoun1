@@ -1,3 +1,4 @@
+import sanitizeHtml from "sanitize-html";
 import { supabase } from "../db/supabaseClient.js";
 import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords, generateWritingGuidance, assessDocumentHealth } from "../services/aiService.js";
 import { AppError } from "../utils/AppError.js";
@@ -194,9 +195,14 @@ export async function editSectionContent(sectionId, content) {
     throw new AppError(400, "Missing required field: content");
   }
 
+  const sanitizedContent = sanitizeHtml(content, {
+    allowedTags: ["p", "strong", "em", "b", "i", "u", "s", "h1", "h2", "h3", "h4", "ul", "ol", "li", "br", "blockquote"],
+    allowedAttributes: {}
+  });
+
   const { data, error } = await supabase
     .from("sections")
-    .update({ content, status: "manually_edited" })
+    .update({ content: sanitizedContent, status: "manually_edited" })
     .eq("id", sectionId)
     .select()
     .single();
