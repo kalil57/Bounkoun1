@@ -376,3 +376,57 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
   return extractJson(response.text);
 }
 
+export async function assessDocumentHealth(project, sections) {
+  const draftedSections = sections.filter((s) => s.content && s.content.trim());
+  if (draftedSections.length === 0) {
+    return {
+      overall: 0,
+      argument: 0,
+      evidence: 0,
+      transitions: 0,
+      citations: 0,
+      top_issues: ["No sections have been drafted yet."]
+    };
+  }
+
+  const combinedContent = draftedSections
+    .map((s) => `${s.section_number} ${s.title}\n${s.content}`)
+    .join("\n\n---\n\n");
+
+  const prompt = `You are a rigorous thesis committee member assessing 
+the overall health of a ${project.academic_level}-level thesis in 
+progress. Be honest and specific -- do not inflate scores.
+
+Discipline: ${project.discipline}
+Topic: ${project.selected_topic || "Not yet selected"}
+
+Drafted content so far:
+${combinedContent}
+
+Evaluate across these four dimensions, each scored 0-100:
+- argument: How clear and well-supported is the central argument/thesis?
+- evidence: How well are claims backed by real data, sources, or reasoning?
+- transitions: How well do sections and paragraphs connect logically?
+- citations: How well-grounded are claims in real, properly cited sources?
+
+Also identify up to 3 specific, concrete "top_issues" -- real problems 
+in this exact draft, not generic advice (e.g. "Section 2.1 makes a 
+claim about X with no supporting evidence" not "add more evidence").
+
+Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
+{
+  "overall": <number 0-100, average of the four>,
+  "argument": <number 0-100>,
+  "evidence": <number 0-100>,
+  "transitions": <number 0-100>,
+  "citations": <number 0-100>,
+  "top_issues": [<string>, ...]
+}`;
+
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: prompt
+  });
+
+  return extractJson(response.text);
+}

@@ -1,5 +1,5 @@
 import { supabase } from "../db/supabaseClient.js";
-import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords, generateWritingGuidance } from "../services/aiService.js";
+import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords, generateWritingGuidance, assessDocumentHealth } from "../services/aiService.js";
 import { AppError } from "../utils/AppError.js";
 
 export async function createOutline(projectId) {
@@ -245,3 +245,22 @@ export async function getWritingGuidance(sectionId, currentDraft) {
   );
 }
 
+export async function getDocumentHealth(projectId) {
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .single();
+
+  if (projectError || !project) throw new AppError(404, "Project not found");
+
+  const { data: sections, error: sectionsError } = await supabase
+    .from("sections")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("order_index", { ascending: true });
+
+  if (sectionsError) throw new Error(sectionsError.message);
+
+  return await assessDocumentHealth(project, sections || []);
+}
