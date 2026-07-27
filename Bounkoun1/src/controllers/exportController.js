@@ -1,3 +1,6 @@
+import { htmlToDocxParagraphs, renderHtmlToPdf } from "../utils/htmlContentParser.js";
+import TurndownService from "turndown";
+const turndownService = new TurndownService();
 import { supabase } from "../db/supabaseClient.js";
 import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
 import { AppError } from "../utils/AppError.js";
@@ -48,7 +51,13 @@ export async function exportMarkdown(projectId) {
   for (const section of sections) {
     const heading = "#".repeat(Math.min(section.level + 1, 6));
     md += `${heading} ${section.section_number}. ${section.title}\n\n`;
-    md += section.content ? `${section.content}\n\n` : `_Not yet drafted._\n\n`;
+    if (section.content) {
+      const isHtml = /<[a-zA-Z]/.test(section.content);
+      const contentMd = isHtml ? turndownService.turndown(section.content) : section.content;
+      md += `${contentMd}\n\n`;
+    } else {
+      md += `_Not yet drafted._\n\n`;
+    }
   }
 
   return md;
@@ -83,13 +92,18 @@ export async function exportDocx(projectId) {
     );
 
     const content = section.content || "Not yet drafted.";
-    const paragraphs = content.split("\n\n").filter(Boolean);
     const fontFamily = project.font_family || "Times New Roman";
     const fontSizeHalfPoints = (project.font_size || 12) * 2;
-    for (const p of paragraphs) {
-      children.push(new Paragraph({
-        children: [new TextRun({ text: p, font: fontFamily, size: fontSizeHalfPoints })]
-      }));
+    const isHtml = /<[a-zA-Z]/.test(content);
+    if (isHtml) {
+      children.push(...htmlToDocxParagraphs(TextRun, Paragraph, content, fontFamily, fontSizeHalfPoints));
+    } else {
+      const paragraphs = content.split("\n\n").filter(Boolean);
+      for (const p of paragraphs) {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: p, font: fontFamily, size: fontSizeHalfPoints })]
+        }));
+      }
     }
   }
 
@@ -128,7 +142,11 @@ export async function exportPdf(projectId) {
 
     if (project.abstract) {
       doc.fontSize(14).font("Helvetica-Bold").text("Abstract");
-      doc.fontSize(bodyFontSize).font(pdfFont).text(project.abstract, { align: "justify" });
+      if (/<[a-zA-Z]/.test(project.abstract)) {
+        renderHtmlToPdf(doc, project.abstract, pdfFont, bodyFontSize);
+      } else {
+        doc.fontSize(bodyFontSize).font(pdfFont).text(project.abstract, { align: "justify" });
+      }
       doc.moveDown();
     }
 
@@ -148,7 +166,11 @@ export async function exportPdf(projectId) {
       doc.moveDown(0.5);
 
       const content = section.content || "Not yet drafted.";
-      doc.fontSize(bodyFontSize).font(pdfFont).text(content, { align: "justify" });
+      if (/<[a-zA-Z]/.test(content)) {
+        renderHtmlToPdf(doc, content, pdfFont, bodyFontSize);
+      } else {
+        doc.fontSize(bodyFontSize).font(pdfFont).text(content, { align: "justify" });
+      }
     }
 
     doc.end();
