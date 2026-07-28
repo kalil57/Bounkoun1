@@ -196,8 +196,16 @@ export async function editSectionContent(sectionId, content) {
   }
 
   const sanitizedContent = sanitizeHtml(content, {
-    allowedTags: ["p", "strong", "em", "b", "i", "u", "s", "h1", "h2", "h3", "h4", "ul", "ol", "li", "br", "blockquote"],
-    allowedAttributes: {}
+    allowedTags: ["p", "strong", "em", "b", "i", "u", "s", "h1", "h2", "h3", "h4", "ul", "ol", "li", "br", "blockquote", "span"],
+    allowedAttributes: {
+      span: ["style"]
+    },
+    allowedStyles: {
+      span: {
+        "font-family": [/.*/],
+        "font-size": [/^\d+(\.\d+)?(pt|px)$/]
+      }
+    }
   });
 
   const { data, error } = await supabase
