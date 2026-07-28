@@ -1,6 +1,6 @@
 import sanitizeHtml from "sanitize-html";
 import { supabase } from "../db/supabaseClient.js";
-import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords, generateWritingGuidance, assessDocumentHealth } from "../services/aiService.js";
+import { generateSectionDraft, validateSectionAI, generateOutline, generateAbstractAndKeywords, generateWritingGuidance, assessDocumentHealth, rewriteParagraph } from "../services/aiService.js";
 import { AppError } from "../utils/AppError.js";
 
 export async function createOutline(projectId) {
@@ -277,4 +277,21 @@ export async function getDocumentHealth(projectId) {
   if (sectionsError) throw new Error(sectionsError.message);
 
   return await assessDocumentHealth(project, sections || []);
+}
+
+export async function getRewrittenParagraph(sectionId, paragraphText) {
+  if (typeof paragraphText !== "string" || paragraphText.trim() === "") {
+    throw new AppError(400, "Missing required field: paragraph_text");
+  }
+
+  const { data: section, error } = await supabase
+    .from("sections")
+    .select("*, projects(*)")
+    .eq("id", sectionId)
+    .single();
+
+  if (error || !section) throw new AppError(404, "Section not found");
+
+  const rewritten = await rewriteParagraph(section.projects, paragraphText);
+  return { rewritten };
 }

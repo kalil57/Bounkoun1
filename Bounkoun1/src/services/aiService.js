@@ -430,3 +430,21 @@ Return ONLY a JSON object in exactly this shape, no markdown, no extra text:
 
   return extractJson(response.text);
 }
+
+export async function rewriteParagraph(project, paragraphText) {
+  const prompt = `You are an academic writing editor helping a ${project.academic_level} student improve a paragraph they already wrote. You are editing their existing words, not writing new content from scratch -- preserve their core argument, claims, and voice as much as possible, while improving clarity, flow, and academic tone.
+
+Discipline: ${project.discipline}
+
+Original paragraph:
+"${paragraphText}"
+
+Rewrite this paragraph to be clearer and more polished, while keeping the same core meaning, claims, and approximate length. Do not add new claims, citations, or data that weren't in the original. Return ONLY the rewritten paragraph text, nothing else -- no preamble, no quotes around it.`;
+
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: prompt
+  });
+
+  return response.text.trim();
+}

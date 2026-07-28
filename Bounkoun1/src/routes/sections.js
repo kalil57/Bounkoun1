@@ -10,7 +10,8 @@ import {
   editSectionContent,
   updateSectionTitle,
   getWritingGuidance,
-  getDocumentHealth
+  getDocumentHealth,
+  getRewrittenParagraph
 } from "../controllers/sectionsController.js";
 
 const router = express.Router();
@@ -101,6 +102,15 @@ router.post("/:sectionId/guidance", requireAuth, async (req, res) => {
 router.get("/:projectId/health", requireAuth, async (req, res) => {
   try {
     const result = await getDocumentHealth(req.params.projectId);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
+
+router.post("/:sectionId/rewrite", requireAuth, async (req, res) => {
+  try {
+    const result = await getRewrittenParagraph(req.params.sectionId, req.body.paragraph_text);
     res.status(200).json(result);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
