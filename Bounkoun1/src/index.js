@@ -11,6 +11,7 @@ import eventsRouter from "./routes/events.js";
 import sectionsRouter from "./routes/sections.js";
 import exportRouter from "./routes/export.js";
 import literatureRouter from "./routes/literature.js";
+import datasetRouter from "./routes/dataset.js";
 
 const app = express();
 app.use(cors());
@@ -26,6 +27,7 @@ app.use("/events", eventsRouter);
 app.use("/sections", sectionsRouter);
 app.use("/export", exportRouter);
 app.use("/literature", literatureRouter);
+app.use("/dataset", datasetRouter);
 
 // Health check
 app.get("/", (req, res) => {
