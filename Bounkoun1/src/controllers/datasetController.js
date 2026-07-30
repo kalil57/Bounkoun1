@@ -1,6 +1,6 @@
 import { supabase } from "../db/supabaseClient.js";
 import { AppError } from "../utils/AppError.js";
-import { analyzeDataset } from "../utils/datasetAnalyzer.js";
+import { analyzeDataset, computeCorrelations } from "../utils/datasetAnalyzer.js";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
@@ -32,6 +32,7 @@ export async function handleDatasetUpload(projectId, file) {
   }
 
   const analysis = analyzeDataset(rows);
+  const correlations = computeCorrelations(rows, analysis.columns);
 
   const { data, error } = await supabase
     .from("datasets")
@@ -41,9 +42,10 @@ export async function handleDatasetUpload(projectId, file) {
       row_count: analysis.row_count,
       columns: analysis.columns,
       summary: analysis.summary,
+      correlations,
       data: rows
     })
-    .select("id, project_id, filename, row_count, columns, summary, created_at")
+    .select("id, project_id, filename, row_count, columns, summary, correlations, created_at")
     .single();
 
   if (error) throw new Error(error.message);
@@ -53,7 +55,7 @@ export async function handleDatasetUpload(projectId, file) {
 export async function getProjectDatasets(projectId) {
   const { data, error } = await supabase
     .from("datasets")
-    .select("id, project_id, filename, row_count, columns, summary, created_at")
+    .select("id, project_id, filename, row_count, columns, summary, correlations, created_at")
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
 
