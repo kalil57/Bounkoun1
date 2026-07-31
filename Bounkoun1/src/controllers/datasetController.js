@@ -62,3 +62,25 @@ export async function getProjectDatasets(projectId) {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function getDatasetPoints(datasetId, col1, col2) {
+  if (!col1 || !col2) {
+    throw new AppError(400, "Both col1 and col2 query parameters are required");
+  }
+
+  const { data: dataset, error } = await supabase
+    .from("datasets")
+    .select("data")
+    .eq("id", datasetId)
+    .single();
+
+  if (error || !dataset) throw new AppError(404, "Dataset not found");
+
+  const points = dataset.data
+    .map((row) => ({ x: row[col1], y: row[col2] }))
+    .filter((p) => p.x !== null && p.x !== undefined && p.x !== "" && p.y !== null && p.y !== undefined && p.y !== "")
+    .map((p) => ({ x: Number(p.x), y: Number(p.y) }))
+    .filter((p) => !isNaN(p.x) && !isNaN(p.y));
+
+  return points;
+}
