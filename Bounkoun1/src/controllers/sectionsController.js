@@ -65,22 +65,34 @@ export async function generateDraftForOutlineItem(sectionId) {
     throw new AppError(400, "This section requires real research data before it can be drafted. Submit your data first via /sections/:sectionId/submit-data");
   }
 
-  const titleLower = (section.title || "").toLowerCase();
-  if (titleLower.includes("discussion") || titleLower.includes("conclusion")) {
-    const { data: levelOneSections, error: sectionsError } = await supabase
-      .from("sections")
-      .select("content, section_type")
-      .eq("project_id", section.project_id)
-      .eq("level", 1);
+  const { data: allSections, error: allSectionsError } = await supabase
+    .from("sections")
+    .select("section_number, section_type, level, content")
+    .eq("project_id", section.project_id);
 
-    if (sectionsError) throw new Error(sectionsError.message);
+  if (allSectionsError) throw new Error(allSectionsError.message);
 
-    const findingsSections = (levelOneSections || []).filter(s => 
-      s.section_type && s.section_type.includes("findings")
+  const findingsChapter = (allSections || []).find(
+    (s) => s.level === 1 && s.section_type && s.section_type.includes("findings")
+  );
+
+  const isThisSectionFindings =
+    findingsChapter &&
+    (section.section_number === findingsChapter.section_number ||
+      (section.section_number || "").startsWith(`${findingsChapter.section_number}.`));
+
+  if (findingsChapter && !isThisSectionFindings) {
+    const findingsFamily = (allSections || []).filter(
+      (s) =>
+        s.section_number === findingsChapter.section_number ||
+        (s.section_number || "").startsWith(`${findingsChapter.section_number}.`)
     );
-    const hasDraftedFindings = findingsSections.some(s => s.content && s.content.trim() !== "");
+    const hasDraftedFindings = findingsFamily.some((s) => s.content && s.content.trim() !== "");
     if (!hasDraftedFindings) {
-      throw new AppError(400, "Findings must be drafted before Discussion or Conclusion sections, since they should be built on actual results.");
+      throw new AppError(
+        400,
+        "Findings must be drafted first, before any other chapter. Bounkoun starts from your real results and computations, then builds the rest of the thesis around them."
+      );
     }
   }
 
