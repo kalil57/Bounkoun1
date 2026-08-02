@@ -208,15 +208,19 @@ export async function editSectionContent(sectionId, content) {
   }
 
   const sanitizedContent = sanitizeHtml(content, {
-    allowedTags: ["p", "strong", "em", "b", "i", "u", "s", "h1", "h2", "h3", "h4", "ul", "ol", "li", "br", "blockquote", "span"],
+    allowedTags: ["p", "strong", "em", "b", "i", "u", "s", "h1", "h2", "h3", "h4", "ul", "ol", "li", "br", "blockquote", "span", "img", "figure", "figcaption"],
     allowedAttributes: {
-      span: ["style"]
+      span: ["style"],
+      img: ["src", "alt"]
     },
     allowedStyles: {
       span: {
         "font-family": [/.*/],
         "font-size": [/^\d+(\.\d+)?(pt|px)$/]
       }
+    },
+    allowedSchemesByTag: {
+      img: ["data", "http", "https"]
     }
   });
 
